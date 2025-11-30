@@ -1,4 +1,4 @@
-# Antigravity Terraform Generator (Python Edition)
+Cloud Terraform Generator (Python Edition)
 
 A powerful AI-driven tool to generate production-ready Terraform infrastructure code for AWS, Azure, and GCP using Google Gemini models.
 
