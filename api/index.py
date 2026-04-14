@@ -20,7 +20,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Terraform Generator - Python Edition</title>
+    <title>Cloud Terraform Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -392,7 +392,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>☁️ Cloud Terraform Generator <span class="badge">Python Edition</span></h1>
+            <h1>☁️ Cloud Terraform Generator</h1>
             <p>AI-Powered Infrastructure as Code Generator</p>
         </div>
 
@@ -690,7 +690,7 @@ def download():
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("☁️  Cloud Terraform Generator - Python Web Edition")
+    print("☁️  Cloud Terraform Generator - Web Edition")
     print("=" * 70)
     print("\n🚀 Starting server...")
     print("📍 Open your browser and go to: http://localhost:5000")
