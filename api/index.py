@@ -20,7 +20,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Terraform Generator</title>
+    <title>TerraGenix AI - Cloud Terraform Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -333,6 +333,35 @@ HTML_TEMPLATE = """
             display: block;
         }
 
+        .cta-line {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .cta-line p {
+            color: var(--accent);
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: var(--darker);
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
         .info-box {
             background: rgba(66, 133, 244, 0.1);
             border-left: 4px solid var(--gcp-blue);
@@ -392,8 +421,8 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>☁️ Cloud Terraform Generator</h1>
-            <p>AI-Powered Infrastructure as Code Generator</p>
+            <h1>TerraGenix AI</h1>
+            <p>Generate Terraform code for AWS, Azure & GCP in seconds ⚡</p>
         </div>
 
         <div class="input-section" id="inputForm">
@@ -439,6 +468,10 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             </div>
 
             <button onclick="generateTerraform()">🚀 Generate Terraform Code</button>
+
+            <div class="cta-line">
+                <p>💡 Describe your infrastructure → Get Terraform instantly</p>
+            </div>
 
             <div class="loader" id="loader">
                 <div class="spinner"></div>
@@ -610,9 +643,12 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             });
         }
     </script>
+
+    <footer class="footer">
+        <p>Built by Suresh Kumar | AWS DevOps Engineer</p>
+    </footer>
 </body>
-</html>
-"""
+</html>"""
 
 
 @app.route('/')

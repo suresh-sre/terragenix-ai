@@ -1,6 +1,6 @@
-# Cloud Terraform Generator
+# TerraGenix AI – Cloud Terraform Generator
 
-> A powerful AI-driven tool to generate production-ready Terraform infrastructure code for AWS, Azure, and GCP using Google Gemini models.
+> Generate Terraform code for AWS, Azure & GCP in seconds ⚡
 
 ## Table of Contents
 
