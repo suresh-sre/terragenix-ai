@@ -351,16 +351,39 @@ HTML_TEMPLATE = """
 
         .footer {
             text-align: center;
-            padding: 20px;
-            background: var(--darker);
-            color: #888;
-            font-size: 0.9rem;
+            padding: 30px 20px;
+            background: #000000;
+            color: white;
+            font-size: 1.1rem;
             margin-top: 40px;
+            border-top: 2px solid var(--accent);
         }
 
         .footer p {
-            margin: 0;
+            margin: 0 0 15px 0;
+            font-weight: 600;
         }
+
+        .cloud-icons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            opacity: 0.8;
+        }
+
+        .cloud-icons .cloud-icon {
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .cloud-icons .cloud-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .cloud-icons .aws { color: var(--aws-orange); }
+        .cloud-icons .azure { color: var(--azure-blue); }
+        .cloud-icons .gcp { color: var(--gcp-blue); }
 
         .info-box {
             background: rgba(66, 133, 244, 0.1);
@@ -646,6 +669,11 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
 
     <footer class="footer">
         <p>Built by Suresh Kumar | AWS DevOps Engineer</p>
+        <div class="cloud-icons">
+            <span class="cloud-icon aws">☁️</span>
+            <span class="cloud-icon azure">☁️</span>
+            <span class="cloud-icon gcp">☁️</span>
+        </div>
     </footer>
 </body>
 </html>"""
