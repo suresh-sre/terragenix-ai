@@ -14,6 +14,12 @@
 - [📂 Output Structure](#-output-structure)
 - [🛠️ Troubleshooting](#️-troubleshooting)
 
+## 🚀 Live Demo
+https://terragenix-ai.vercel.app/
+
+# 📢 LinkedIn Post
+https://shorturl.at/FqlTC
+
 ## 🚀 Features
 
 - **Multi-Cloud Support**: Generate infrastructure for AWS, Azure, and Google Cloud Platform (GCP)
