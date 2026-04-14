@@ -287,8 +287,39 @@ HTML_TEMPLATE = """
             width: auto;
         }
 
-        .copy-btn:hover {
+        .code-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: flex-end;
+        }
+
+        .download-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-block code {
+            font-family: inherit;
         }
 
         .section-title {
@@ -360,8 +391,28 @@ HTML_TEMPLATE = """
         }
 
         .footer p {
-            margin: 0 0 15px 0;
+            margin: 0 0 10px 0;
             font-weight: 600;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .social-link {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: white;
+            text-decoration: underline;
         }
 
         .cloud-icons {
@@ -402,6 +453,39 @@ HTML_TEMPLATE = """
 
         .info-box a:hover {
             text-decoration: underline;
+        }
+
+        .demo-notice {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .demo-btn {
+            background: linear-gradient(135deg, var(--success) 0%, #00a085 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.6);
+        }
+
+        .demo-text {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin: 0;
+            font-weight: 500;
         }
 
         @keyframes fadeInDown {
@@ -445,13 +529,17 @@ HTML_TEMPLATE = """
     <div class="container">
         <div class="header">
             <h1>TerraGenix AI</h1>
-            <p>Generate Terraform code for AWS, Azure & GCP in seconds ⚡</p>
+            <p>Cloud Terraform Generator</p>
         </div>
 
         <div class="input-section" id="inputForm">
             <div class="input-group">
                 <label for="apiKey">🔑 Gemini API Key</label>
                 <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
+                <div class="demo-notice">
+                    <button class="demo-btn" onclick="enableDemoMode()">🚀 Try Demo Mode (No API Key Needed)</button>
+                    <p class="demo-text">Generate sample Terraform code without an API key</p>
+                </div>
                 <div class="info-box">
                     Don't have an API key? Get it free from 
                     <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
@@ -519,6 +607,186 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
     <script>
         let selectedCloud = '';
         let generatedCode = {};
+        let isDemoMode = false;
+
+        function enableDemoMode() {
+            isDemoMode = true;
+            document.getElementById('apiKey').value = 'DEMO_MODE';
+            document.getElementById('apiKey').disabled = true;
+            document.querySelector('.demo-btn').textContent = '✅ Demo Mode Enabled';
+            document.querySelector('.demo-btn').style.background = 'linear-gradient(135deg, #636e72 0%, #4a4a4a 100%)';
+            alert('Demo Mode Enabled! You can now generate sample Terraform code without an API key.');
+        }
+
+        function generateDemoTerraform(cloud, services, requirements) {
+            // Generate sample Terraform code for demo purposes
+            const demoData = {};
+
+            // Sample README
+            demoData['README.md'] = `# Terraform Infrastructure for ${cloud.toUpperCase()}
+
+This Terraform configuration creates a basic infrastructure setup on ${cloud.toUpperCase()}.
+
+## Resources Created
+${services.split(',').map(s => `- ${s.trim()}`).join('\n')}
+
+## Requirements
+- Terraform >= 1.0
+- ${cloud.toUpperCase()} CLI configured
+
+## Usage
+\`\`\`bash
+terraform init
+terraform plan
+terraform apply
+\`\`\`
+
+Generated by TerraGenix AI - Demo Mode
+`;
+
+            // Sample provider.tf
+            if (cloud === 'aws') {
+                demoData['provider.tf'] = `terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}`;
+            } else if (cloud === 'azure') {
+                demoData['provider.tf'] = `terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}`;
+            } else if (cloud === 'gcp') {
+                demoData['provider.tf'] = `terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 4.0"
+    }
+  }
+}
+
+provider "google" {
+  project = "your-project-id"
+  region  = "us-central1"
+}`;
+            }
+
+            // Sample variables.tf
+            demoData['variables.tf'] = `# Input variables for ${cloud.toUpperCase()} infrastructure
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "demo"
+}
+
+variable "region" {
+  description = "Cloud region"
+  type        = string
+  default     = "${cloud === 'aws' ? 'us-east-1' : cloud === 'azure' ? 'East US' : 'us-central1'}"
+}`;
+
+            // Sample main.tf with basic resources
+            if (cloud === 'aws') {
+                demoData['main.tf'] = `# Basic AWS infrastructure - DEMO MODE
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name        = "demo-vpc"
+    Environment = var.environment
+  }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "demo-public-subnet"
+  }
+}
+
+# Add more resources based on selected services...
+`;
+            } else if (cloud === 'azure') {
+                demoData['main.tf'] = `# Basic Azure infrastructure - DEMO MODE
+
+resource "azurerm_resource_group" "demo" {
+  name     = "demo-rg"
+  location = var.region
+}
+
+resource "azurerm_virtual_network" "demo" {
+  name                = "demo-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.demo.location
+  resource_group_name = azurerm_resource_group.demo.name
+}
+
+# Add more resources based on selected services...
+`;
+            } else if (cloud === 'gcp') {
+                demoData['main.tf'] = `# Basic GCP infrastructure - DEMO MODE
+
+resource "google_compute_network" "demo" {
+  name                    = "demo-vpc"
+  auto_create_subnetworks = false
+}
+
+resource "google_compute_subnetwork" "demo" {
+  name          = "demo-subnet"
+  ip_cidr_range = "10.0.1.0/24"
+  region        = var.region
+  network       = google_compute_network.demo.id
+}
+
+# Add more resources based on selected services...
+`;
+            }
+
+            // Sample outputs.tf
+            demoData['outputs.tf'] = `# Infrastructure outputs
+
+output "environment" {
+  description = "Deployment environment"
+  value       = var.environment
+}
+
+output "region" {
+  description = "Cloud region"
+  value       = var.region
+}
+
+# Add specific resource outputs here...
+`;
+
+            // Sample terraform.tfvars.example
+            demoData['terraform.tfvars.example'] = `# Example variable values
+# Copy this file to terraform.tfvars and customize
+
+environment = "production"
+region      = "${cloud === 'aws' ? 'us-east-1' : cloud === 'azure' ? 'East US' : 'us-central1'}"`;
+
+            return demoData;
+        }
 
         function selectCloud(cloud) {
             selectedCloud = cloud;
@@ -540,8 +808,14 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             const output = document.getElementById('output');
             const inputForm = document.getElementById('inputForm');
 
-            if (!apiKey || !selectedCloud || !services) {
-                errorMsg.textContent = "Please fill in API Key, select a cloud provider, and enter services!";
+            if (!selectedCloud || !services) {
+                errorMsg.textContent = "Please select a cloud provider and enter services!";
+                errorMsg.classList.add('active');
+                return;
+            }
+
+            if (!isDemoMode && !apiKey) {
+                errorMsg.textContent = "Please enter an API key or try Demo Mode!";
                 errorMsg.classList.add('active');
                 return;
             }
@@ -550,27 +824,36 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             loader.classList.add('active');
 
             try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        api_key: apiKey,
-                        cloud_provider: selectedCloud,
-                        services: services,
-                        requirements: requirements
-                    })
-                });
+                let result;
 
-                const result = await response.json();
+                if (isDemoMode) {
+                    // Generate demo/sample Terraform code
+                    result = generateDemoTerraform(selectedCloud, services, requirements);
+                } else {
+                    // Call actual API
+                    const response = await fetch('/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            api_key: apiKey,
+                            cloud_provider: selectedCloud,
+                            services: services,
+                            requirements: requirements
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error(result.error || 'Generation failed');
+                    result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Generation failed');
+                    }
+                    result = result.data;
                 }
 
-                generatedCode = result.data;
-                renderOutput(result.data);
+                generatedCode = result;
+                renderOutput(result);
 
                 loader.classList.remove('active');
                 inputForm.style.display = 'none';
@@ -596,8 +879,11 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
                     section.innerHTML = `
                         <div class="section-title">📄 ${filename}</div>
                         <div class="code-block">
-                            <button class="copy-btn" onclick="copyCode('${filename}')">📋 Copy</button>
-                            <pre id="code-${filename}">${escapeHtml(data[filename])}</pre>
+                            <div class="code-actions">
+                                <button class="copy-btn" onclick="copyCode('${filename}')">📋 Copy</button>
+                                <button class="download-btn" onclick="downloadFile('${filename}')">📥 Download ${filename}</button>
+                            </div>
+                            <pre id="code-${filename}"><code>${escapeHtml(data[filename])}</code></pre>
                         </div>
                     `;
                     outputContent.appendChild(section);
@@ -621,6 +907,19 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
                     btn.textContent = originalText;
                 }, 2000);
             });
+        }
+
+        function downloadFile(filename) {
+            const code = generatedCode[filename];
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
 
         async function downloadZip() {
@@ -658,17 +957,26 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             document.getElementById('inputForm').style.display = 'block';
             document.getElementById('output').classList.remove('visible');
             document.getElementById('apiKey').value = '';
+            document.getElementById('apiKey').disabled = false;
             document.getElementById('services').value = '';
             document.getElementById('requirements').value = '';
             selectedCloud = '';
+            isDemoMode = false;
             document.querySelectorAll('.cloud-option').forEach(el => {
                 el.classList.remove('selected');
             });
+            // Reset demo button
+            document.querySelector('.demo-btn').textContent = '🚀 Try Demo Mode (No API Key Needed)';
+            document.querySelector('.demo-btn').style.background = 'linear-gradient(135deg, var(--success) 0%, #00a085 100%)';
         }
     </script>
 
     <footer class="footer">
         <p>Built by Suresh Kumar | AWS DevOps Engineer</p>
+        <div class="social-links">
+            <a href="https://github.com/suresh-sre" target="_blank" class="social-link">🐙 GitHub</a>
+            <a href="https://www.linkedin.com/in/suresh-cloud/" target="_blank" class="social-link">💼 LinkedIn</a>
+        </div>
         <div class="cloud-icons">
             <span class="cloud-icon aws">☁️</span>
             <span class="cloud-icon azure">☁️</span>
