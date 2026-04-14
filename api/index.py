@@ -688,12 +688,3 @@ def download():
         return jsonify({'error': str(e)}), 500
 
 
-if __name__ == '__main__':
-    print("=" * 70)
-    print("☁️  Cloud Terraform Generator - Web Edition")
-    print("=" * 70)
-    print("\n🚀 Starting server...")
-    print("📍 Open your browser and go to: http://localhost:5000")
-    print("\n💡 Press Ctrl+C to stop the server\n")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
