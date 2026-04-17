@@ -20,7 +20,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Terraform Generator - Python Edition</title>
+    <title>GenOps Lab - Cloud Terraform Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -287,8 +287,39 @@ HTML_TEMPLATE = """
             width: auto;
         }
 
-        .copy-btn:hover {
+        .code-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: flex-end;
+        }
+
+        .download-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-block code {
+            font-family: inherit;
         }
 
         .section-title {
@@ -332,6 +363,78 @@ HTML_TEMPLATE = """
         .error-msg.active {
             display: block;
         }
+
+        .cta-line {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .cta-line p {
+            color: var(--accent);
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            background: #000000;
+            color: white;
+            font-size: 1.1rem;
+            margin-top: 40px;
+            border-top: 2px solid var(--accent);
+        }
+
+        .footer p {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .social-link {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .cloud-icons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            opacity: 0.8;
+        }
+
+        .cloud-icons .cloud-icon {
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .cloud-icons .cloud-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .cloud-icons .aws { color: var(--aws-orange); }
+        .cloud-icons .azure { color: var(--azure-blue); }
+        .cloud-icons .gcp { color: var(--gcp-blue); }
 
         .info-box {
             background: rgba(66, 133, 244, 0.1);
@@ -392,14 +495,14 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>☁️ Cloud Terraform Generator <span class="badge">Python Edition</span></h1>
-            <p>AI-Powered Infrastructure as Code Generator</p>
+            <h1>GenOps Lab</h1>
+            <p>Cloud Terraform Generator</p>
         </div>
 
         <div class="input-section" id="inputForm">
             <div class="input-group">
                 <label for="apiKey">🔑 Gemini API Key</label>
-                <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
+                <input type="password" id="apiKey" placeholder="Enter your Gemini API Key to generate Terraform code">
                 <div class="info-box">
                     Don't have an API key? Get it free from 
                     <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
@@ -439,6 +542,10 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             </div>
 
             <button onclick="generateTerraform()">🚀 Generate Terraform Code</button>
+
+            <div class="cta-line">
+                <p>💡 Describe your infrastructure → Get Terraform instantly</p>
+            </div>
 
             <div class="loader" id="loader">
                 <div class="spinner"></div>
@@ -484,8 +591,13 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             const output = document.getElementById('output');
             const inputForm = document.getElementById('inputForm');
 
-            if (!apiKey || !selectedCloud || !services) {
-                errorMsg.textContent = "Please fill in API Key, select a cloud provider, and enter services!";
+            if (!apiKey) {
+                alert("Please enter your Gemini API key to generate Terraform code");
+                return;
+            }
+
+            if (!selectedCloud || !services) {
+                errorMsg.textContent = "Please select a cloud provider and enter services!";
                 errorMsg.classList.add('active');
                 return;
             }
@@ -540,8 +652,11 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
                     section.innerHTML = `
                         <div class="section-title">📄 ${filename}</div>
                         <div class="code-block">
-                            <button class="copy-btn" onclick="copyCode('${filename}')">📋 Copy</button>
-                            <pre id="code-${filename}">${escapeHtml(data[filename])}</pre>
+                            <div class="code-actions">
+                                <button class="copy-btn" onclick="copyCode('${filename}')">📋 Copy</button>
+                                <button class="download-btn" onclick="downloadFile('${filename}')">📥 Download ${filename}</button>
+                            </div>
+                            <pre id="code-${filename}"><code>${escapeHtml(data[filename])}</code></pre>
                         </div>
                     `;
                     outputContent.appendChild(section);
@@ -565,6 +680,19 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
                     btn.textContent = originalText;
                 }, 2000);
             });
+        }
+
+        function downloadFile(filename) {
+            const code = generatedCode[filename];
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
 
         async function downloadZip() {
@@ -610,9 +738,21 @@ GCP: compute-instance, cloud-sql, storage-bucket, vpc"></textarea>
             });
         }
     </script>
+
+    <footer class="footer">
+        <p>Built by Suresh Kumar | AWS DevOps Engineer</p>
+        <div class="social-links">
+            <a href="https://github.com/suresh-sre" target="_blank" class="social-link">🐙 GitHub</a>
+            <a href="https://www.linkedin.com/in/suresh-cloud/" target="_blank" class="social-link">💼 LinkedIn</a>
+        </div>
+        <div class="cloud-icons">
+            <span class="cloud-icon aws">☁️</span>
+            <span class="cloud-icon azure">☁️</span>
+            <span class="cloud-icon gcp">☁️</span>
+        </div>
+    </footer>
 </body>
-</html>
-"""
+</html>"""
 
 
 @app.route('/')
@@ -688,12 +828,3 @@ def download():
         return jsonify({'error': str(e)}), 500
 
 
-if __name__ == '__main__':
-    print("=" * 70)
-    print("☁️  Cloud Terraform Generator - Python Web Edition")
-    print("=" * 70)
-    print("\n🚀 Starting server...")
-    print("📍 Open your browser and go to: http://localhost:5000")
-    print("\n💡 Press Ctrl+C to stop the server\n")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
