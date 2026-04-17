@@ -8,7 +8,6 @@ import os
 import json
 from datetime import datetime
 from flask import Flask, render_template_string, request, jsonify, send_file
-from antigravity_terraform_generator import TerraformGenerator
 import io
 import zipfile
 
@@ -829,12 +828,22 @@ def generate():
         
         # ===== GENERATION =====
         try:
+            from antigravity_terraform_generator import TerraformGenerator
+
             generator = TerraformGenerator(api_key)
             result = generator.generate_terraform(
                 cloud_provider,
                 services,
                 requirements if requirements else None
             )
+        except ModuleNotFoundError as me:
+            app.logger.error(f'[generate] Missing backend dependency: {str(me)}')
+            return jsonify({
+                'error': 'Backend generator module is missing',
+                'code': 'BACKEND_MODULE_MISSING',
+                'message': 'The Terraform generator backend is not fully deployed. Restore antigravity_terraform_generator.py and redeploy.',
+                'details': str(me)
+            }), 500
         except ValueError as ve:
             app.logger.error(f'[generate] Validation error during generation: {str(ve)}')
             return jsonify({
