@@ -765,66 +765,198 @@ def index():
 def generate():
     """API endpoint to generate Terraform code"""
     try:
+        # ===== REQUEST PARSING =====
         data = request.get_json()
+        if data is None:
+            app.logger.error('[generate] Invalid JSON in request body')
+            return jsonify({
+                'error': 'Invalid request format',
+                'code': 'INVALID_JSON',
+                'message': 'Request body must be valid JSON'
+            }), 400
         
+        # ===== REQUEST VALIDATION =====
         api_key = data.get('api_key', '').strip()
         cloud_provider = data.get('cloud_provider', '').strip()
         services_input = data.get('services', '').strip()
         requirements = data.get('requirements', '').strip()
         
+        # Check required fields
         if not api_key or not cloud_provider or not services_input:
-            return jsonify({'error': 'Missing required fields'}), 400
+            missing_fields = []
+            if not api_key:
+                missing_fields.append('api_key')
+            if not cloud_provider:
+                missing_fields.append('cloud_provider')
+            if not services_input:
+                missing_fields.append('services')
+            
+            app.logger.warning(f'[generate] Missing required fields: {missing_fields}')
+            return jsonify({
+                'error': 'Missing required fields',
+                'code': 'REQUEST_VALIDATION_FAILED',
+                'missing_fields': missing_fields,
+                'message': f'Required fields are missing: {", ".join(missing_fields)}'
+            }), 400
         
-        # Parse services
+        # Validate cloud provider
+        valid_providers = ['aws', 'azure', 'gcp']
+        if cloud_provider.lower() not in valid_providers:
+            app.logger.warning(f'[generate] Invalid cloud provider: {cloud_provider}')
+            return jsonify({
+                'error': 'Invalid cloud provider',
+                'code': 'INVALID_CLOUD_PROVIDER',
+                'message': f'Cloud provider must be one of: {", ".join(valid_providers)}',
+                'provided': cloud_provider
+            }), 400
+        
+        # ===== PARSE SERVICES =====
         services = [s.strip() for s in services_input.replace('\n', ',').split(',') if s.strip()]
         
         if not services:
-            return jsonify({'error': 'No valid services provided'}), 400
+            app.logger.warning('[generate] No valid services provided after parsing')
+            return jsonify({
+                'error': 'No valid services',
+                'code': 'INVALID_SERVICES',
+                'message': 'Please provide at least one service'
+            }), 400
         
-        # Generate Terraform code
-        generator = TerraformGenerator(api_key)
-        result = generator.generate_terraform(
-            cloud_provider,
-            services,
-            requirements if requirements else None
-        )
+        # ===== LOGGING REQUEST DETAILS =====
+        app.logger.info(f'[generate] Processing request')
+        app.logger.info(f'[generate] Cloud provider: {cloud_provider}')
+        app.logger.info(f'[generate] Services requested: {services}')
+        app.logger.info(f'[generate] Requirements: {requirements if requirements else "None"}')
+        
+        # ===== GENERATION =====
+        try:
+            generator = TerraformGenerator(api_key)
+            result = generator.generate_terraform(
+                cloud_provider,
+                services,
+                requirements if requirements else None
+            )
+        except ValueError as ve:
+            app.logger.error(f'[generate] Validation error during generation: {str(ve)}')
+            return jsonify({
+                'error': 'Invalid API key or parameters',
+                'code': 'GENERATION_VALIDATION_FAILED',
+                'message': str(ve)
+            }), 400
+        except Exception as ge:
+            app.logger.error(f'[generate] Generation error: {str(ge)}')
+            return jsonify({
+                'error': 'Terraform generation failed',
+                'code': 'GENERATION_FAILED',
+                'message': 'Failed to generate Terraform code. Please check your API key and try again.',
+                'details': str(ge)
+            }), 500
         
         if not result:
-            return jsonify({'error': 'Failed to generate Terraform code with all models'}), 500
+            app.logger.error('[generate] Generator returned empty result')
+            return jsonify({
+                'error': 'Generation returned no content',
+                'code': 'EMPTY_GENERATION',
+                'message': 'Failed to generate Terraform code with available models'
+            }), 500
         
+        app.logger.info(f'[generate] Successfully generated Terraform code ({len(result)} files)')
         return jsonify({'data': result})
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        app.logger.error(f'[generate] Unexpected error: {str(e)}')
+        return jsonify({
+            'error': 'Internal server error',
+            'code': 'INTERNAL_ERROR',
+            'message': 'An unexpected error occurred. Please try again or contact support.'
+        }), 500
 
 
 @app.route('/download', methods=['POST'])
 def download():
     """API endpoint to download Terraform code as ZIP"""
     try:
+        # ===== REQUEST PARSING =====
         data = request.get_json()
+        if data is None:
+            app.logger.error('[download] Invalid JSON in request body')
+            return jsonify({
+                'error': 'Invalid request format',
+                'code': 'INVALID_JSON',
+                'message': 'Request body must be valid JSON'
+            }), 400
+        
+        # ===== REQUEST VALIDATION =====
         code = data.get('code', {})
-        cloud_provider = data.get('cloud_provider', 'terraform')
+        cloud_provider = data.get('cloud_provider', 'terraform').strip()
         
-        if not code:
-            return jsonify({'error': 'No code to download'}), 400
+        if not code or not isinstance(code, dict):
+            app.logger.warning('[download] Missing or invalid code object')
+            return jsonify({
+                'error': 'No code to download',
+                'code': 'INVALID_CODE',
+                'message': 'Code object must be a non-empty dictionary with filenames as keys'
+            }), 400
         
-        # Create ZIP file in memory
-        memory_file = io.BytesIO()
-        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for filename, content in code.items():
-                zf.writestr(filename, content)
+        if len(code) == 0:
+            app.logger.warning('[download] Empty code object provided')
+            return jsonify({
+                'error': 'No files to download',
+                'code': 'EMPTY_CODE',
+                'message': 'Code object contains no files'
+            }), 400
         
-        memory_file.seek(0)
+        app.logger.info(f'[download] Processing download request')
+        app.logger.info(f'[download] Cloud provider: {cloud_provider}')
+        app.logger.info(f'[download] Files to include: {list(code.keys())}')
         
-        return send_file(
-            memory_file,
-            mimetype='application/zip',
-            as_attachment=True,
-            download_name=f'terraform-{cloud_provider}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.zip'
-        )
+        # ===== ZIP CREATION =====
+        try:
+            memory_file = io.BytesIO()
+            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for filename, content in code.items():
+                    if not isinstance(filename, str) or not content:
+                        app.logger.warning(f'[download] Skipping invalid file: {filename}')
+                        continue
+                    
+                    try:
+                        zf.writestr(filename, str(content))
+                    except Exception as fe:
+                        app.logger.error(f'[download] Failed to write file {filename}: {str(fe)}')
+                        continue
+            
+            memory_file.seek(0)
+            
+            if memory_file.getbuffer().nbytes == 0:
+                app.logger.error('[download] ZIP file is empty')
+                return jsonify({
+                    'error': 'Failed to create ZIP',
+                    'code': 'ZIP_CREATION_FAILED',
+                    'message': 'Could not create valid ZIP file'
+                }), 500
+            
+            app.logger.info(f'[download] Successfully created ZIP file ({memory_file.getbuffer().nbytes} bytes)')
+            
+            return send_file(
+                memory_file,
+                mimetype='application/zip',
+                as_attachment=True,
+                download_name=f'terraform-{cloud_provider}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.zip'
+            )
+        
+        except Exception as ze:
+            app.logger.error(f'[download] ZIP creation error: {str(ze)}')
+            return jsonify({
+                'error': 'ZIP creation failed',
+                'code': 'ZIP_CREATION_ERROR',
+                'message': 'Failed to create ZIP file. Please try again.'
+            }), 500
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        app.logger.error(f'[download] Unexpected error: {str(e)}')
+        return jsonify({
+            'error': 'Internal server error',
+            'code': 'INTERNAL_ERROR',
+            'message': 'An unexpected error occurred. Please try again or contact support.'
+        }), 500
 
 
