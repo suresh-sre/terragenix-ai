@@ -52,7 +52,24 @@ export default function TerraformGenerator({ onClose }: { onClose: () => void })
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate Terraform code');
+        // Handle specific error codes
+        if (data.code === 'BACKEND_URL_MISSING') {
+          throw new Error(
+            `❌ Backend Not Configured!\n\nYou need to deploy your backend and add the URL to Vercel:\n\n1. Deploy Python backend to Heroku/Railway\n2. In Vercel Settings → Environment Variables\n3. Add NEXT_PUBLIC_API_URL with your backend URL`
+          );
+        }
+        if (data.code === 'BACKEND_TIMEOUT') {
+          throw new Error(
+            `⏱️ Backend Not Responding!\n\nThe backend is taking too long or is not running:\n\n1. Check if your backend is deployed\n2. Try visiting your backend URL directly in a browser\n3. Ensure it's running and responding`
+          );
+        }
+        if (data.code === 'BACKEND_CONNECTION_FAILED') {
+          throw new Error(
+            `🔗 Backend Connection Failed!\n\n${data.message}\n\nVerify your backend URL is correct and the server is running.`
+          );
+        }
+
+        throw new Error(data.error || `Error: ${response.status}`);
       }
 
       setGeneratedCode(data.data);
@@ -94,7 +111,18 @@ export default function TerraformGenerator({ onClose }: { onClose: () => void })
         }),
       });
 
-      if (!response.ok) throw new Error('Download failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        if (errorData.code === 'BACKEND_TIMEOUT') {
+          throw new Error('Backend is not responding. Check if your server is running.');
+        }
+        if (errorData.code === 'BACKEND_CONNECTION_FAILED') {
+          throw new Error(`Cannot connect to backend: ${errorData.message}`);
+        }
+
+        throw new Error(errorData.error || 'Download failed');
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -209,7 +237,7 @@ export default function TerraformGenerator({ onClose }: { onClose: () => void })
 
               {/* Error Message */}
               {error && (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 rounded-lg p-3 text-sm">
+                <div className="bg-red-500/20 border border-red-500 text-red-100 rounded-lg p-4 text-sm whitespace-pre-wrap font-mono">
                   {error}
                 </div>
               )}
