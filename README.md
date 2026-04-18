@@ -1,5 +1,14 @@
 # GenOpsLab - Cloud & DevOps AI Platform
 
+## Deployment Note
+
+This repo contains two deployable apps:
+
+- `frontend/` is the main Next.js site that should be deployed to Vercel
+- `backend/` is the Flask API that should be deployed separately
+
+If Vercel is connected to the repository root, it may serve the legacy Python entrypoint instead of the main landing page. See [DEPLOY_ON_VERCEL.md](./DEPLOY_ON_VERCEL.md) for the safest setup.
+
 > Generate Terraform code for AWS, Azure & GCP in seconds with AI ⚡
 
 A full-stack AI-powered platform for generating production-ready infrastructure as code with a modern SaaS landing page.
@@ -140,6 +149,12 @@ npm run dev
 cd frontend
 vercel
 ```
+
+Preferred Vercel settings:
+
+- Root Directory: `frontend`
+- Framework Preset: `Next.js`
+- Environment Variable: `NEXT_PUBLIC_API_URL=https://your-backend-api.com`
 
 ### Backend (Heroku/Railway/AWS)
 ```bash
