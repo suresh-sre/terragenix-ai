@@ -1,4 +1,7 @@
 google-generativeai>=0.3.0
 flask>=2.3.0
+<<<<<<< HEAD
 gunicorn>=21.0.0
 flask-cors>=4.0.0
+=======
+>>>>>>> f4ac7fd266f7c9035e3cddee20aa7ec9f6d7b3c3
