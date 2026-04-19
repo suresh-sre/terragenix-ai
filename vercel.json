@@ -1,13 +1,4 @@
 {
-<<<<<<< HEAD
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "installCommand": "npm install --prefix frontend",
-  "buildCommand": "npm run build --prefix frontend",
-  "devCommand": "npm run dev --prefix frontend",
-  "outputDirectory": "frontend/.next"
-}
-=======
   "version": 2,
   "builds": [
     {
@@ -22,4 +13,3 @@
     }
   ]
 }
->>>>>>> f4ac7fd266f7c9035e3cddee20aa7ec9f6d7b3c3
